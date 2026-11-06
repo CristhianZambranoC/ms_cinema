@@ -1,8 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TheaterDto } from './dto/theater.dto';
+import { CreateTheaterDto } from './dto/create-theater.dto';
 import { TheaterResponseDto } from './dto/theater-response.dto';
+import { UpdateTheaterDto } from './dto/update-theater.dto';
 import { TheaterMapper } from './mappers/theater.mapper';
 import { TheatersRepository } from './repositories/theaters.repository';
 import { Theater } from './entities/theater.entity';
@@ -16,31 +17,35 @@ export class TheatersService {
     private readonly theaterMapper: TheaterMapper,
   ) {}
 
-  async create(dto: TheaterDto): Promise<TheaterResponseDto> {
-    if (dto.location === undefined || dto.capacity === undefined) {
-      throw new BadRequestException('location and capacity are required for create');
-    }
-
+  async create(dto: CreateTheaterDto): Promise<TheaterResponseDto> {
     const entity = this.theaterMapper.toEntity(dto);
     const saved = await this.theatersRepository.save(entity); //await es necesario para esperar a que la promesa se resuelva y obtener el resultado de la operación de guardado en la base de datos. Esto asegura que el objeto guardado esté disponible antes de continuar con la ejecución del código.
     return this.theaterMapper.toResponseDto(saved);
   }
 
   async findAll(): Promise<TheaterResponseDto[]> {
-    const theaters = await this.theatersRepository.find();
+    const theaters = await this.theatersRepository.find({
+      relations: { projector: true, seats: true },
+    });
     return this.theaterMapper.toResponseDtoList(theaters);
   }
 
   async findOne(id: number): Promise<TheaterResponseDto> {
-    const theater = await this.theatersRepository.findOne({ where: { id } });
+    const theater = await this.theatersRepository.findOne({
+      where: { id },
+      relations: { projector: true, seats: true },
+    });
     if (!theater) {
       throw new NotFoundException(`Theater with id ${id} not found`);
     }
     return this.theaterMapper.toResponseDto(theater);
   }
 
-  async update(id: number, dto: TheaterDto): Promise<TheaterResponseDto> {
-    const theater = await this.theatersRepository.findOne({ where: { id } });
+  async update(id: number, dto: UpdateTheaterDto): Promise<TheaterResponseDto> {
+    const theater = await this.theatersRepository.findOne({
+      where: { id },
+      relations: { projector: true, seats: true },
+    });
     if (!theater) {
       throw new NotFoundException(`Theater with id ${id} not found`);
     }

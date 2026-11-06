@@ -1,38 +1,45 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { TheatersService } from './theaters.service';
-import { TheaterDto } from './dto/theater.dto';
+import { CreateTheaterDto } from './dto/create-theater.dto';
+import { TheaterResponseDto } from './dto/theater-response.dto';
+import { UpdateTheaterDto } from './dto/update-theater.dto';
 
 @Controller('theaters')
 export class TheatersController {
   constructor(private readonly theatersService: TheatersService) {}
 
   @Post()
-  create(@Body() dto: TheaterDto) {
+  create(@Body() dto: CreateTheaterDto): Promise<TheaterResponseDto> {
     return this.theatersService.create(dto);
   }
 
   @Get()
-  findAll() {
+  findAll(): Promise<TheaterResponseDto[]> {
     return this.theatersService.findAll();
   }
 
   @Get('reports/large/:minCapacity')
-  largeReport(@Param('minCapacity', ParseIntPipe) minCapacity: number) {
+  largeReport(
+    @Param('minCapacity', ParseIntPipe) minCapacity: number,
+  ): Promise<TheaterResponseDto[]> {
     return this.theatersService.getLargeTheatersReport(minCapacity);
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseIntPipe) id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number): Promise<TheaterResponseDto> {
     return this.theatersService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() dto: TheaterDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateTheaterDto,
+  ): Promise<TheaterResponseDto> {
     return this.theatersService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  remove(@Param('id', ParseIntPipe) id: number): Promise<{ message: string }> {
     return this.theatersService.remove(id);
   }
 }
