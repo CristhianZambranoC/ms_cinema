@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SecurityGuard } from './common/guards/security.guard';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TheatersModule } from './theaters/theaters.module';
 import { ProjectorsModule } from './projectors/projectors.module';
 import { SeatsModule } from './seats/seats.module';
+import { MoviesModule } from './movies/movies.module';
+import { ScreeningsModule } from './screenings/screenings.module';
+import { NotificationsModule } from './gateways/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -27,8 +32,17 @@ import { SeatsModule } from './seats/seats.module';
     TheatersModule,
     ProjectorsModule,
     SeatsModule,
+    MoviesModule,
+    ScreeningsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: SecurityGuard,
+    },
+  ],
 })
 export class AppModule {}
